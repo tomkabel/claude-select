@@ -4,6 +4,25 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project uses
 [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Changed
+
+- Clicking an image now selects its card, like the rest of the card; full-size view
+  moved to a corner button.
+- Status messages (sending, sent, regenerating, errors) appear in the bottom bar next
+  to the buttons, and the sent message names what was picked.
+- Server refusals show in the page instead of a browser `alert()`; an expired link
+  locks the page.
+- The timer reads `1 h 59 min`, warns under 5 minutes, and is no longer read out by
+  screen readers on every poll. Ctrl/Cmd+Enter submits.
+
+### Fixed
+
+- On phones the bottom bar covered the last card; the page now reserves the bar's
+  real height, and the bar lays out in three rows.
+- Note placeholder contrast raised to WCAG AA in both themes.
+
 ## [0.1.1] - 2026-09-23
 
 ### Fixed

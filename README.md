@@ -25,7 +25,7 @@ structured JSON and carries on.
 ## Highlights
 
 - **Images, short text and long text** in one grid: png/jpg/svg/webp/gif with
-  click-to-zoom, snippets up to 500 characters, and long drafts that scroll and expand.
+  a full-size view, snippets up to 500 characters, and long drafts that scroll and expand.
 - **Single-winner or multi-winner** modes (radio or checkbox, 0..N), with
   Select all and Clear.
 - **Regenerate selected**: the agent receives each item's original prompt and

@@ -25,44 +25,48 @@
   button:disabled { opacity: .45; cursor: not-allowed; }
   button.primary { background: var(--accent); border-color: var(--accent); color: var(--on-accent); font-weight: 600; }
   :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  ::selection { background: color-mix(in srgb, var(--accent) 28%, transparent); }
+  svg { display: block; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; }
 
   header.top { max-width: 80rem; margin: 0 auto; padding: 2rem 1.5rem 1rem; display: flex; gap: 1rem;
                align-items: flex-start; justify-content: space-between; flex-wrap: wrap; }
   h1 { font-size: 1.6rem; line-height: 1.2; margin: 0 0 .25rem; letter-spacing: -.01em; }
   .desc { color: var(--muted); margin: 0; max-width: 60ch; white-space: pre-wrap; }
-  .meta-row { display: flex; gap: .75rem; align-items: center; color: var(--muted); font-size: .85rem; }
+  .meta-row { display: flex; gap: .75rem; align-items: center; color: var(--muted); font-size: .85rem;
+              font-variant-numeric: tabular-nums; }
+  .late #timer { color: var(--warn); font-weight: 600; }
   .dot { width: .55rem; height: .55rem; border-radius: 50%; background: var(--ok); display: inline-block; }
   .offline .dot { background: var(--warn); animation: pulse 1s infinite alternate; }
   @keyframes pulse { to { opacity: .3; } }
 
-  .banner { max-width: 80rem; margin: 0 auto 1rem; padding: 0 1.5rem; }
-  .banner p { margin: 0; padding: .75rem 1rem; border-radius: var(--radius); background: var(--accent-soft); }
-  .banner:empty { display: none; }
-
-  main { max-width: 80rem; margin: 0 auto; padding: 0 1.5rem 9rem; display: grid; gap: 1rem;
-         grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr)); align-items: start; }
+  main { max-width: 80rem; margin: 0 auto; padding: 0 1.5rem calc(var(--bar-h, 9rem) + 1.5rem); display: grid; gap: 1rem;
+         grid-template-columns: repeat(auto-fill, minmax(min(18rem, 100%), 1fr)); align-items: start; }
   @media (min-width: 44rem) { .card[data-type="long_text"] { grid-column: span 2; } }
 
   .card { position: relative; background: var(--surface); border: 2px solid var(--line); border-radius: var(--radius);
           box-shadow: var(--shadow); padding: .9rem; display: flex; flex-direction: column; gap: .6rem;
-          cursor: pointer; transition: border-color .12s, transform .12s; }
+          cursor: pointer; transition: border-color .12s; }
   .card:hover { border-color: var(--muted); }
   .card:has(input:checked) { border-color: var(--accent); background: linear-gradient(var(--accent-soft), var(--surface) 5rem); }
   .card .head { display: flex; align-items: center; gap: .5rem; }
   .card label { display: flex; align-items: center; gap: .5rem; font-weight: 600; cursor: pointer; flex: 1; min-width: 0; }
-  .card label span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .card label span { overflow-wrap: anywhere; }
   .card input { accent-color: var(--accent); width: 1.1rem; height: 1.1rem; margin: 0; flex: none; }
   .badge { font-size: .72rem; color: var(--muted); border: 1px solid var(--line); border-radius: 99px; padding: 0 .45rem; }
   .check { position: absolute; top: -.6rem; right: -.6rem; width: 1.6rem; height: 1.6rem; border-radius: 50%;
-           background: var(--accent); color: var(--on-accent); display: none; place-items: center; font-weight: 700; }
+           background: var(--accent); color: var(--on-accent); display: none; place-items: center; }
   .card:has(input:checked) .check { display: grid; }
 
-  .zoom { padding: 0; border: 0; background: repeating-conic-gradient(var(--line) 0 25%, transparent 0 50%) 0 0 / 16px 16px;
-          border-radius: 8px; overflow: hidden; display: block; width: 100%; cursor: zoom-in; }
-  .zoom img { display: block; width: 100%; height: 14rem; object-fit: contain; }
+  /* Checkerboard shows transparency in images; kept faint so letterboxing doesn't read as a glitch. */
+  .frame { position: relative; border-radius: 8px; overflow: hidden;
+           background: repeating-conic-gradient(color-mix(in srgb, var(--line) 45%, transparent) 0 25%, transparent 0 50%) 0 0 / 16px 16px; }
+  .frame img { display: block; width: 100%; height: 14rem; object-fit: contain; }
+  .zoom { position: absolute; right: .5rem; bottom: .5rem; padding: .4rem; display: grid; place-items: center;
+          background: color-mix(in srgb, var(--surface) 88%, transparent); cursor: zoom-in; }
   .short { margin: 0; font-size: 1.05rem; white-space: pre-wrap; overflow-wrap: anywhere; }
   .long { white-space: pre-wrap; overflow-wrap: anywhere; max-height: 16rem; overflow: auto; padding: .75rem;
-          border-radius: 8px; background: var(--bg); font-size: .93rem; line-height: 1.6; }
+          border-radius: 8px; background: var(--bg); font-size: .93rem; line-height: 1.6;
+          scrollbar-width: thin; scrollbar-color: var(--line) transparent; }
   .long.open { max-height: none; }
   .more { align-self: flex-start; padding: .2rem .6rem; font-size: .82rem; }
   .meta { font-size: .8rem; color: var(--muted); display: flex; flex-wrap: wrap; gap: .25rem .75rem; }
@@ -77,14 +81,25 @@
                backdrop-filter: blur(8px); border-top: 1px solid var(--line); }
   .bar-inner { max-width: 80rem; margin: 0 auto; padding: .8rem 1.5rem; display: flex; gap: .6rem;
                align-items: center; flex-wrap: wrap; }
-  .count { color: var(--muted); font-size: .9rem; min-width: 8rem; }
+  .count { color: var(--muted); font-size: .9rem; min-width: 8rem; font-variant-numeric: tabular-nums; }
   #feedback { flex: 1 1 16rem; font: inherit; padding: .5rem .7rem; border-radius: 8px; border: 1px solid var(--line);
-              background: var(--bg); color: var(--ink); }
+              background: var(--bg); color: var(--ink); caret-color: var(--accent); }
+  #feedback::placeholder { color: var(--muted); opacity: 1; }
+  .banner { max-width: 80rem; margin: 0 auto; padding: .8rem 1.5rem 0; }
+  .banner p { margin: 0; padding: .6rem .9rem; border-radius: 8px; background: var(--accent-soft); }
+  .banner:empty { display: none; }
+  /* Narrow: count + list actions, then the note, then the two decisions side by side. */
+  @media (max-width: 40rem) {
+    .count { flex: 1; min-width: 0; }
+    #feedback { flex-basis: 100%; }
+    #regen, #submit { flex: 1 1 auto; }
+  }
+  @media (pointer: coarse) { button, #feedback { min-height: 2.75rem; } .zoom { min-width: 2.75rem; } }
 
   dialog { border: 0; padding: 0; background: transparent; max-width: 95vw; max-height: 95vh; }
   dialog::backdrop { background: rgb(0 0 0 / .8); }
   dialog img { width: 90vw; height: 90vh; object-fit: contain; display: block; cursor: zoom-out; }
-  @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+  @media (prefers-reduced-motion: reduce) { .offline .dot { animation: none; } }
 </style>
 </head>
 <body>
@@ -93,20 +108,21 @@
     <h1 id="title">Loading…</h1>
     <p class="desc" id="desc"></p>
   </div>
-  <div class="meta-row" id="conn" aria-live="polite"><span class="dot"></span><span id="conn-text">Connected</span>
+  <div class="meta-row" id="conn"><span class="dot"></span><span id="conn-text" aria-live="polite">Connected</span>
     <span id="timer"></span></div>
 </header>
-<div class="banner" id="banner" role="status" aria-live="polite"></div>
 <main id="grid" aria-label="Options"></main>
-<footer class="bar">
+<footer class="bar" id="bar">
+  <!-- Status lives in the bar, next to the buttons that cause it, so it is never scrolled out of view. -->
+  <div class="banner" id="banner" role="status" aria-live="polite"></div>
   <div class="bar-inner">
     <span class="count" id="count" aria-live="polite"></span>
     <button id="all" hidden>Select all</button>
     <button id="clear" hidden>Clear</button>
-    <input id="feedback" type="text" placeholder="Optional note for the agent (what to change, why you picked it)"
-           aria-label="Feedback for the agent" maxlength="2000">
+    <input id="feedback" type="text" placeholder="Optional note for the agent"
+           aria-label="Note for the agent: what to change, or why you picked it" maxlength="2000">
     <button id="regen">Regenerate selected</button>
-    <button id="submit" class="primary">Submit selection</button>
+    <button id="submit" class="primary" title="Ctrl+Enter" aria-keyshortcuts="Control+Enter Meta+Enter">Submit selection</button>
   </div>
 </footer>
 <dialog id="viewer" aria-label="Full-size image"></dialog>
@@ -118,6 +134,9 @@ let S = null;            // last session snapshot from the server
 let selected = new Set();
 let sending = false;     // an event is in flight (possibly retrying)
 let online = true;
+let error = '';          // last refusal from the server, shown until the next send
+const ICON_CHECK = '<svg width="14" height="14" viewBox="0 0 24 24" stroke-width="3.5"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+const ICON_ZOOM = '<svg width="16" height="16" viewBox="0 0 24 24" stroke-width="2"><path d="M15 4h5v5M9 20H4v-5M20 4l-6 6M4 20l6-6"/></svg>';
 
 async function api(path, body) {
   const r = await fetch(path, {
@@ -144,6 +163,9 @@ function el(tag, props = {}, ...kids) {
   n.append(...kids.filter(k => k != null));
   return n;
 }
+// Assigning the same text still replaces the node, which makes screen readers repeat live regions.
+function setText(n, s) { if (n.textContent !== s) n.textContent = s; }
+const label = it => (it.metadata || {}).label || (it.metadata || {}).title || it.id;
 
 function card(it, prevRev) {
   const type = S.mode === 'single' ? 'radio' : 'checkbox';
@@ -153,21 +175,24 @@ function card(it, prevRev) {
     saveSel(); sync();
   });
   const md = it.metadata || {};
-  const title = md.label || md.title || it.id;
+  const title = label(it);
   const head = el('div', { className: 'head' },
-    el('label', { htmlFor: input.id }, input, el('span', { textContent: title, title })),
+    el('label', { htmlFor: input.id }, input, el('span', { textContent: title })),
     it.revision > 1 ? el('span', { className: 'badge', textContent: 'v' + it.revision, title: 'Regenerated' }) : null);
 
   let body;
   if (it.type === 'image') {
+    // The image itself selects, like the rest of the card; zoom has its own button.
     const img = el('img', { src: it.src, alt: md.alt || title, loading: 'lazy' });
-    img.addEventListener('error', () => img.replaceWith(el('p', { className: 'short', textContent: 'Image failed to load.' })));
-    body = el('button', { className: 'zoom', type: 'button', title: 'View full size' }, img);
-    body.addEventListener('click', () => { $('viewer').replaceChildren(el('img', { src: it.src, alt: img.alt })); $('viewer').showModal(); });
+    const zoom = el('button', { className: 'zoom', type: 'button', title: 'View full size',
+                                ariaLabel: `View ${title} full size`, innerHTML: ICON_ZOOM });
+    zoom.addEventListener('click', () => { $('viewer').replaceChildren(el('img', { src: it.src, alt: img.alt })); $('viewer').showModal(); });
+    body = el('div', { className: 'frame' }, img, zoom);
+    img.addEventListener('error', () => body.replaceWith(el('p', { className: 'short', textContent: 'Image failed to load.' })));
   } else if (it.type === 'short_text') {
     body = el('p', { className: 'short', textContent: it.content });
   } else {
-    const box = el('div', { className: 'long', textContent: it.content, tabIndex: 0 });
+    const box = el('div', { className: 'long', textContent: it.content, tabIndex: 0, role: 'region', ariaLabel: title });
     const more = el('button', { className: 'more', type: 'button', textContent: 'Expand' });
     more.addEventListener('click', () => { more.textContent = box.classList.toggle('open') ? 'Collapse' : 'Expand'; });
     body = el('div', {}, box);
@@ -180,7 +205,7 @@ function card(it, prevRev) {
     .map(([k, v]) => el('span', { textContent: `${k}: ${typeof v === 'object' ? JSON.stringify(v) : v}` }));
   if (it.type === 'long_text') extra.push(el('span', { textContent: `${words.toLocaleString()} words` }));
 
-  const c = el('article', { className: 'card' }, el('span', { className: 'check', textContent: '✓', ariaHidden: 'true' }),
+  const c = el('article', { className: 'card' }, el('span', { className: 'check', innerHTML: ICON_CHECK, ariaHidden: 'true' }),
     head, body, extra.length ? el('div', { className: 'meta' }, ...extra) : null);
   c.dataset.type = it.type;
   c.dataset.id = it.id;
@@ -213,32 +238,40 @@ function sync() {
   const pending = new Set(S.pending);
   for (const c of document.querySelectorAll('.card')) {
     c.classList.toggle('regen', pending.has(c.dataset.id));
+    c.ariaBusy = String(pending.has(c.dataset.id));
     c.querySelector('input').checked = selected.has(c.dataset.id);
   }
   const open = S.status === 'open' && !pending.size && !sending;
   const n = selected.size;
-  $('count').textContent = S.mode === 'single'
+  setText($('count'), S.mode === 'single'
     ? (n ? '1 selected' : 'Pick one option')
-    : `${n} of ${S.items.length} selected`;
+    : `${n} of ${S.items.length} selected`);
   $('submit').disabled = !open || (S.mode === 'single' && n !== 1);
   $('regen').disabled = !open || !n;
   $('all').disabled = !open || n === S.items.length;
   $('clear').disabled = !open || !n;
   for (const i of document.querySelectorAll('.card input')) i.disabled = !open;
-  const msg = sending ? (online ? 'Sending…' : 'Sending… the connection dropped; retrying until it is back.')
-    : pending.size ? `The agent is regenerating ${pending.size} option${pending.size > 1 ? 's' : ''}. They update here automatically.`
-    : S.status === 'submitted' ? 'Sent. The agent has your choice. You can close this tab.'
-    : S.status === 'expired' ? 'This selection timed out. Ask the agent in chat to reopen it.'
-    : '';
-  $('banner').replaceChildren(...(msg ? [el('p', { textContent: msg })] : []));
   const r = S.remaining_s;
-  $('timer').textContent = S.status === 'open' ? `· ${Math.floor(r / 60)}:${String(r % 60).padStart(2, '0')} left` : '';
+  const late = S.status === 'open' && r < 300;
+  const picked = S.items.filter(i => selected.has(i.id)).map(label).join(', ');
+  const msg = sending ? (online ? 'Sending…' : 'Sending… the connection dropped; retrying until it is back.')
+    : error && S.status === 'open' ? error
+    : pending.size ? `The agent is regenerating ${pending.size} option${pending.size > 1 ? 's' : ''}. They update here automatically.`
+    : S.status === 'submitted' ? `Sent: ${picked || 'none of the options'}. The agent has your choice; you can close this tab.`
+    : S.status === 'expired' ? 'This selection timed out. Ask the agent in chat to reopen it.'
+    : late ? 'Under 5 minutes left. Submit soon, or this selection times out.'
+    : '';
+  if ($('banner').textContent !== msg) $('banner').replaceChildren(...(msg ? [el('p', { textContent: msg })] : []));
+  const left = r >= 3600 ? `${Math.floor(r / 3600)} h ${Math.floor(r % 3600 / 60)} min`
+    : `${Math.floor(r / 60)}:${String(r % 60).padStart(2, '0')}`;
+  setText($('timer'), S.status === 'open' ? `· ${left} left` : '');
+  $('conn').classList.toggle('late', late);
 }
 
 async function send(action) {
   const ev = { client_event_id: crypto.randomUUID(), action, selected_ids: [...selected],
                feedback: $('feedback').value };
-  sending = true; sync();
+  sending = true; error = ''; sync();
   // Retry with the same client_event_id until the server answers; it drops duplicates.
   for (;;) {
     try {
@@ -249,7 +282,7 @@ async function send(action) {
       $('feedback').value = '';
       break;
     } catch (e) {
-      if (e.status) { alert('Could not send: ' + e.message); break; }  // server said no; don't retry
+      if (e.status) { error = `Could not send (${e.message}). The page refreshes its state; try again.`; break; }  // server said no; don't retry
       setOnline(false); sync();
       await new Promise(r => setTimeout(r, 2000));
     }
@@ -265,6 +298,11 @@ $('regen').addEventListener('click', () => send('regenerate'));
 $('all').addEventListener('click', () => { selected = new Set(S.items.map(i => i.id)); saveSel(); sync(); });
 $('clear').addEventListener('click', () => { selected.clear(); saveSel(); sync(); });
 $('viewer').addEventListener('click', () => $('viewer').close());
+addEventListener('keydown', e => {
+  if (e.key === 'Enter' && (e.ctrlKey || e.metaKey) && !$('submit').disabled) { e.preventDefault(); $('submit').click(); }
+});
+// Keep the last card clear of the fixed bar, whose height changes as it wraps and shows status.
+new ResizeObserver(() => document.body.style.setProperty('--bar-h', $('bar').offsetHeight + 'px')).observe($('bar'));
 
 async function refresh() {
   try {
@@ -274,7 +312,12 @@ async function refresh() {
     else { Object.assign(S, { status: s.status, pending: s.pending, remaining_s: s.remaining_s }); sync(); }
   } catch (e) {
     setOnline(false);
-    if (e.status === 401) { $('title').textContent = 'This link has expired. Ask the agent for a new one.'; return; }
+    if (e.status === 401) {  // token no longer valid: lock the page rather than let picks go nowhere
+      $('title').textContent = 'This link has expired. Ask the agent for a new one.';
+      $('conn-text').textContent = 'Disconnected';
+      if (S) { S.status = 'expired'; sync(); }
+      return;
+    }
   }
   setTimeout(refresh, 2000);
 }
