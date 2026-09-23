@@ -1,7 +1,7 @@
 {
   "name": "claude-select",
   "description": "Show generated options (images, short or long text, mixed) on a localhost page; the user picks one or many winners or asks to regenerate specific ones, and the choice flows back to the agent.",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "author": {
     "name": "Tom Kristian Abel",
     "email": "tomkristianabel@gmail.com"

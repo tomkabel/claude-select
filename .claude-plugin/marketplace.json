@@ -12,7 +12,7 @@
     {
       "name": "claude-select",
       "description": "Show generated options on a localhost page; the user picks winners or asks to regenerate, and the choice flows back to the agent.",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "source": "./",
       "category": "productivity",
       "tags": ["selection", "ui", "human-in-the-loop"]

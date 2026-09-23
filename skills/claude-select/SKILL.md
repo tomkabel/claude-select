@@ -1,7 +1,7 @@
 ---
 name: claude-select
 description: Show the user several generated options (images, short text, long text, or a mix) on a localhost web page so they can pick one or several winners, leave a note, or ask to regenerate specific ones. Use when you produced alternatives the user should choose between visually instead of in chat, e.g. "give me 4 logo options", "draft 3 intros and let me pick", "which headline", "shortlist these", "regenerate the ones I don't like".
-version: 0.1.0
+version: 0.1.1
 license: MIT
 platforms: [linux, macos, windows]
 allowed-tools: Bash(python3 *picker.py*)
