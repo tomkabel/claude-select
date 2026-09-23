@@ -18,7 +18,7 @@ ENV = {**os.environ, "CLAUDE_SELECT_HOME": HOME}
 
 
 def cli(*args):
-    r = subprocess.run([sys.executable, str(HERE / "picker.py"), *args], env=ENV, capture_output=True, text=True, timeout=30)
+    r = subprocess.run([sys.executable, str(HERE / "picker.py"), *args], env=ENV, capture_output=True, text=True, timeout=30, check=False)
     return r.returncode, json.loads(r.stdout)
 
 

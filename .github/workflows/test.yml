@@ -1,0 +1,59 @@
+name: test
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        # SKILL.md claims Python >= 3.10 on linux, macos and windows. Test the floor
+        # and the newest, on every claimed OS, or the claim is decoration.
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        python-version: ["3.10", "3.14"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: end-to-end self-check (server, both modes, regenerate, timeout)
+        run: python skills/claude-select/scripts/test_picker.py
+
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+      - name: ruff
+        run: pip install ruff && ruff check skills/
+      - name: no imports outside the stdlib
+        run: |
+          python - <<'PY'
+          import ast, pathlib, sys
+          bad = []
+          for f in pathlib.Path("skills").rglob("*.py"):
+              for node in ast.walk(ast.parse(f.read_text())):
+                  names = [a.name for a in node.names] if isinstance(node, ast.Import) else \
+                          [node.module] if isinstance(node, ast.ImportFrom) and node.level == 0 and node.module else []
+                  bad += [f"{f}: {n}" for n in names if n.split(".")[0] not in sys.stdlib_module_names]
+          print("\n".join(bad) or "stdlib only")
+          sys.exit(1 if bad else 0)
+          PY
+
+  validate-plugin:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: install claude code
+        run: npm install -g @anthropic-ai/claude-code
+      - name: validate plugin + marketplace manifests
+        run: claude plugin validate . && claude plugin validate .claude-plugin/plugin.json
