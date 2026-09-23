@@ -1,0 +1,5 @@
+{
+  "items": [
+    {"id": "logo-b", "type": "image", "content": "img/logo-b-v2.svg", "metadata": {"label": "Mark · square (bolder)", "alt": "Teal square on dark teal"}, "generation_task_id": "logo"}
+  ]
+}

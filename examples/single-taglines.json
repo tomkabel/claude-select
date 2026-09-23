@@ -1,0 +1,17 @@
+{
+  "title": "Pick a tagline for the Aurora launch",
+  "description": "One winner goes on the landing page hero.",
+  "mode": "single",
+  "timeout_s": 900,
+  "tasks": {
+    "tagline": {
+      "prompt": "Write a hero tagline (max 8 words) for Aurora, a calm budgeting app for freelancers.",
+      "params": {"tone": "warm", "max_words": 8}
+    }
+  },
+  "items": [
+    {"id": "t1", "type": "short_text", "content": "Money that moves at your pace.", "metadata": {"label": "Option A", "words": 6}, "generation_task_id": "tagline"},
+    {"id": "t2", "type": "short_text", "content": "Irregular income. Regular calm.", "metadata": {"label": "Option B", "words": 4}, "generation_task_id": "tagline"},
+    {"id": "t3", "type": "short_text", "content": "Budgeting built for the gig in between gigs.", "metadata": {"label": "Option C", "words": 8}, "generation_task_id": "tagline"}
+  ]
+}

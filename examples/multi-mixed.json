@@ -1,0 +1,17 @@
+{
+  "title": "Shortlist launch assets",
+  "description": "Keep any number of these; regenerate the ones that are close but not right.",
+  "mode": "multi",
+  "tasks": {
+    "logo": {"prompt": "Minimal geometric logo mark for Aurora, flat, two colours.", "params": {"size": "240x180", "format": "svg"}},
+    "blurb": {"prompt": "One-sentence app-store subtitle for Aurora (max 30 words)."},
+    "post": {"prompt": "Launch announcement blog post for Aurora, ~150 words, friendly and concrete."}
+  },
+  "items": [
+    {"id": "logo-a", "type": "image", "content": "img/logo-a.svg", "metadata": {"label": "Mark · circle", "alt": "Orange circle on cream"}, "generation_task_id": "logo"},
+    {"id": "logo-b", "type": "image", "content": "img/logo-b.svg", "metadata": {"label": "Mark · square", "alt": "Teal rounded square on mint"}, "generation_task_id": "logo"},
+    {"id": "logo-c", "type": "image", "content": "img/logo-c.svg", "metadata": {"label": "Mark · triangle", "alt": "Indigo triangle on lavender"}, "generation_task_id": "logo"},
+    {"id": "blurb-1", "type": "short_text", "content": "Plan around irregular income: Aurora smooths lumpy freelance pay into a steady weekly budget you can actually trust.", "metadata": {"label": "Subtitle"}, "generation_task_id": "blurb"},
+    {"id": "post-1", "type": "long_text", "content": "Meet Aurora\n\nIf you freelance, you know the pattern: three invoices land in one week, then nothing for a month. Most budgeting apps assume a salary. Aurora doesn't.\n\nAurora looks at what you've earned over the last six months and turns it into a steady weekly amount you can spend without second-guessing. When a big payment arrives, the surplus goes into a buffer. When things are slow, the buffer pays you.\n\nThat's it. No categories to maintain, no guilt-trip notifications. One number each week, and a buffer that tells you how many quiet weeks you can ride out.\n\nAurora is free for your first three months. Connect your bank, answer two questions, and see your weekly number in under a minute.\n\nWe built Aurora because we were tired of feast-or-famine months ourselves. We hope it gives you a little calm too.", "metadata": {"label": "Launch post"}, "generation_task_id": "post"}
+  ]
+}

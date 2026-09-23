@@ -1,0 +1,284 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Choose · claude-select</title>
+<link rel="icon" href="data:,">
+<style>
+  :root {
+    color-scheme: light dark;
+    --bg: #f6f5f2; --surface: #fff; --ink: #1c1b19; --muted: #6b6860; --line: #dedbd3;
+    --accent: #c2410c; --accent-soft: #fdeee6; --ok: #15803d; --warn: #b45309;
+    --on-accent: #fff; --radius: 12px; --shadow: 0 1px 2px rgb(0 0 0 / .06), 0 4px 16px rgb(0 0 0 / .04);
+    font: 15px/1.5 ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #151412; --surface: #1f1e1b; --ink: #ecebe7; --muted: #a09c92; --line: #34322d;
+            --accent: #fb923c; --on-accent: #1c1b19; --accent-soft: #3a2415; --ok: #4ade80; --warn: #fbbf24; }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); }
+  button { font: inherit; cursor: pointer; border-radius: 8px; border: 1px solid var(--line);
+           background: var(--surface); color: var(--ink); padding: .5rem .9rem; }
+  button:hover:not(:disabled) { border-color: var(--muted); }
+  button:disabled { opacity: .45; cursor: not-allowed; }
+  button.primary { background: var(--accent); border-color: var(--accent); color: var(--on-accent); font-weight: 600; }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  header.top { max-width: 80rem; margin: 0 auto; padding: 2rem 1.5rem 1rem; display: flex; gap: 1rem;
+               align-items: flex-start; justify-content: space-between; flex-wrap: wrap; }
+  h1 { font-size: 1.6rem; line-height: 1.2; margin: 0 0 .25rem; letter-spacing: -.01em; }
+  .desc { color: var(--muted); margin: 0; max-width: 60ch; white-space: pre-wrap; }
+  .meta-row { display: flex; gap: .75rem; align-items: center; color: var(--muted); font-size: .85rem; }
+  .dot { width: .55rem; height: .55rem; border-radius: 50%; background: var(--ok); display: inline-block; }
+  .offline .dot { background: var(--warn); animation: pulse 1s infinite alternate; }
+  @keyframes pulse { to { opacity: .3; } }
+
+  .banner { max-width: 80rem; margin: 0 auto 1rem; padding: 0 1.5rem; }
+  .banner p { margin: 0; padding: .75rem 1rem; border-radius: var(--radius); background: var(--accent-soft); }
+  .banner:empty { display: none; }
+
+  main { max-width: 80rem; margin: 0 auto; padding: 0 1.5rem 9rem; display: grid; gap: 1rem;
+         grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr)); align-items: start; }
+  @media (min-width: 44rem) { .card[data-type="long_text"] { grid-column: span 2; } }
+
+  .card { position: relative; background: var(--surface); border: 2px solid var(--line); border-radius: var(--radius);
+          box-shadow: var(--shadow); padding: .9rem; display: flex; flex-direction: column; gap: .6rem;
+          cursor: pointer; transition: border-color .12s, transform .12s; }
+  .card:hover { border-color: var(--muted); }
+  .card:has(input:checked) { border-color: var(--accent); background: linear-gradient(var(--accent-soft), var(--surface) 5rem); }
+  .card .head { display: flex; align-items: center; gap: .5rem; }
+  .card label { display: flex; align-items: center; gap: .5rem; font-weight: 600; cursor: pointer; flex: 1; min-width: 0; }
+  .card label span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .card input { accent-color: var(--accent); width: 1.1rem; height: 1.1rem; margin: 0; flex: none; }
+  .badge { font-size: .72rem; color: var(--muted); border: 1px solid var(--line); border-radius: 99px; padding: 0 .45rem; }
+  .check { position: absolute; top: -.6rem; right: -.6rem; width: 1.6rem; height: 1.6rem; border-radius: 50%;
+           background: var(--accent); color: var(--on-accent); display: none; place-items: center; font-weight: 700; }
+  .card:has(input:checked) .check { display: grid; }
+
+  .zoom { padding: 0; border: 0; background: repeating-conic-gradient(var(--line) 0 25%, transparent 0 50%) 0 0 / 16px 16px;
+          border-radius: 8px; overflow: hidden; display: block; width: 100%; cursor: zoom-in; }
+  .zoom img { display: block; width: 100%; height: 14rem; object-fit: contain; }
+  .short { margin: 0; font-size: 1.05rem; white-space: pre-wrap; overflow-wrap: anywhere; }
+  .long { white-space: pre-wrap; overflow-wrap: anywhere; max-height: 16rem; overflow: auto; padding: .75rem;
+          border-radius: 8px; background: var(--bg); font-size: .93rem; line-height: 1.6; }
+  .long.open { max-height: none; }
+  .more { align-self: flex-start; padding: .2rem .6rem; font-size: .82rem; }
+  .meta { font-size: .8rem; color: var(--muted); display: flex; flex-wrap: wrap; gap: .25rem .75rem; }
+  .card.regen { cursor: progress; }
+  .card.regen > :not(.head) { opacity: .35; filter: blur(1px); }
+  .card.regen::after { content: "Regenerating…"; position: absolute; inset: 0; display: grid; place-items: center;
+                       font-weight: 600; color: var(--accent); }
+  .card.fresh { animation: fresh 1.2s ease-out; }
+  @keyframes fresh { from { box-shadow: 0 0 0 4px var(--accent); } }
+
+  footer.bar { position: fixed; inset: auto 0 0 0; background: color-mix(in srgb, var(--surface) 92%, transparent);
+               backdrop-filter: blur(8px); border-top: 1px solid var(--line); }
+  .bar-inner { max-width: 80rem; margin: 0 auto; padding: .8rem 1.5rem; display: flex; gap: .6rem;
+               align-items: center; flex-wrap: wrap; }
+  .count { color: var(--muted); font-size: .9rem; min-width: 8rem; }
+  #feedback { flex: 1 1 16rem; font: inherit; padding: .5rem .7rem; border-radius: 8px; border: 1px solid var(--line);
+              background: var(--bg); color: var(--ink); }
+
+  dialog { border: 0; padding: 0; background: transparent; max-width: 95vw; max-height: 95vh; }
+  dialog::backdrop { background: rgb(0 0 0 / .8); }
+  dialog img { width: 90vw; height: 90vh; object-fit: contain; display: block; cursor: zoom-out; }
+  @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+</style>
+</head>
+<body>
+<header class="top">
+  <div>
+    <h1 id="title">Loading…</h1>
+    <p class="desc" id="desc"></p>
+  </div>
+  <div class="meta-row" id="conn" aria-live="polite"><span class="dot"></span><span id="conn-text">Connected</span>
+    <span id="timer"></span></div>
+</header>
+<div class="banner" id="banner" role="status" aria-live="polite"></div>
+<main id="grid" aria-label="Options"></main>
+<footer class="bar">
+  <div class="bar-inner">
+    <span class="count" id="count" aria-live="polite"></span>
+    <button id="all" hidden>Select all</button>
+    <button id="clear" hidden>Clear</button>
+    <input id="feedback" type="text" placeholder="Optional note for the agent (what to change, why you picked it)"
+           aria-label="Feedback for the agent" maxlength="2000">
+    <button id="regen">Regenerate selected</button>
+    <button id="submit" class="primary">Submit selection</button>
+  </div>
+</footer>
+<dialog id="viewer" aria-label="Full-size image"></dialog>
+
+<script>
+const token = new URLSearchParams(location.search).get('t') || '';
+const $ = id => document.getElementById(id);
+let S = null;            // last session snapshot from the server
+let selected = new Set();
+let sending = false;     // an event is in flight (possibly retrying)
+let online = true;
+
+async function api(path, body) {
+  const r = await fetch(path, {
+    method: body ? 'POST' : 'GET',
+    headers: { 'X-Select-Token': token, 'Content-Type': 'application/json' },
+    body: body && JSON.stringify(body),
+  });
+  const data = await r.json().catch(() => ({}));
+  if (!r.ok) throw Object.assign(new Error(data.error || r.statusText), { status: r.status });
+  return data;
+}
+
+const storeKey = () => 'claude-select:' + S.session_id;
+function saveSel() { localStorage.setItem(storeKey(), JSON.stringify([...selected])); }
+
+function setOnline(ok) {
+  online = ok;
+  $('conn').classList.toggle('offline', !ok);
+  $('conn-text').textContent = ok ? 'Connected' : 'Connection lost, retrying…';
+}
+
+function el(tag, props = {}, ...kids) {
+  const n = Object.assign(document.createElement(tag), props);
+  n.append(...kids.filter(k => k != null));
+  return n;
+}
+
+function card(it, prevRev) {
+  const type = S.mode === 'single' ? 'radio' : 'checkbox';
+  const input = el('input', { type, name: 'pick', value: it.id, checked: selected.has(it.id), id: 'pick-' + it.id });
+  input.addEventListener('change', () => {
+    if (type === 'radio') selected = new Set([it.id]); else input.checked ? selected.add(it.id) : selected.delete(it.id);
+    saveSel(); sync();
+  });
+  const md = it.metadata || {};
+  const title = md.label || md.title || it.id;
+  const head = el('div', { className: 'head' },
+    el('label', { htmlFor: input.id }, input, el('span', { textContent: title, title })),
+    it.revision > 1 ? el('span', { className: 'badge', textContent: 'v' + it.revision, title: 'Regenerated' }) : null);
+
+  let body;
+  if (it.type === 'image') {
+    const img = el('img', { src: it.src, alt: md.alt || title, loading: 'lazy' });
+    img.addEventListener('error', () => img.replaceWith(el('p', { className: 'short', textContent: 'Image failed to load.' })));
+    body = el('button', { className: 'zoom', type: 'button', title: 'View full size' }, img);
+    body.addEventListener('click', () => { $('viewer').replaceChildren(el('img', { src: it.src, alt: img.alt })); $('viewer').showModal(); });
+  } else if (it.type === 'short_text') {
+    body = el('p', { className: 'short', textContent: it.content });
+  } else {
+    const box = el('div', { className: 'long', textContent: it.content, tabIndex: 0 });
+    const more = el('button', { className: 'more', type: 'button', textContent: 'Expand' });
+    more.addEventListener('click', () => { more.textContent = box.classList.toggle('open') ? 'Collapse' : 'Expand'; });
+    body = el('div', {}, box);
+    requestAnimationFrame(() => { if (box.scrollHeight <= box.clientHeight + 2) more.remove(); });
+    body.append(more);
+  }
+
+  const words = it.content ? it.content.trim().split(/\s+/).length : 0;
+  const extra = Object.entries(md).filter(([k]) => !['label', 'title', 'alt'].includes(k))
+    .map(([k, v]) => el('span', { textContent: `${k}: ${typeof v === 'object' ? JSON.stringify(v) : v}` }));
+  if (it.type === 'long_text') extra.push(el('span', { textContent: `${words.toLocaleString()} words` }));
+
+  const c = el('article', { className: 'card' }, el('span', { className: 'check', textContent: '✓', ariaHidden: 'true' }),
+    head, body, extra.length ? el('div', { className: 'meta' }, ...extra) : null);
+  c.dataset.type = it.type;
+  c.dataset.id = it.id;
+  if (prevRev && prevRev < it.revision) c.classList.add('fresh');
+  // Whole card toggles, except clicks on its own controls or while selecting text.
+  c.addEventListener('click', e => {
+    if (e.target.closest('button, input, label, a') || getSelection().toString()) return;
+    input.click();
+  });
+  return c;
+}
+
+function render(s) {
+  const prev = S ? Object.fromEntries(S.items.map(i => [i.id, i.revision])) : {};
+  const first = !S || S.session_id !== s.session_id;
+  S = s;
+  if (first) selected = new Set(JSON.parse(localStorage.getItem(storeKey()) || '[]'));
+  const ids = new Set(s.items.map(i => i.id));
+  selected = new Set([...selected].filter(id => ids.has(id)));
+  if (s.mode === 'single' && selected.size > 1) selected = new Set([...selected].slice(0, 1));
+  document.title = s.title + ' · claude-select';
+  $('title').textContent = s.title;
+  $('desc').textContent = s.description || '';
+  $('grid').replaceChildren(...s.items.map(it => card(it, prev[it.id])));
+  $('all').hidden = $('clear').hidden = s.mode !== 'multi';
+  sync();
+}
+
+function sync() {
+  const pending = new Set(S.pending);
+  for (const c of document.querySelectorAll('.card')) {
+    c.classList.toggle('regen', pending.has(c.dataset.id));
+    c.querySelector('input').checked = selected.has(c.dataset.id);
+  }
+  const open = S.status === 'open' && !pending.size && !sending;
+  const n = selected.size;
+  $('count').textContent = S.mode === 'single'
+    ? (n ? '1 selected' : 'Pick one option')
+    : `${n} of ${S.items.length} selected`;
+  $('submit').disabled = !open || (S.mode === 'single' && n !== 1);
+  $('regen').disabled = !open || !n;
+  $('all').disabled = !open || n === S.items.length;
+  $('clear').disabled = !open || !n;
+  for (const i of document.querySelectorAll('.card input')) i.disabled = !open;
+  const msg = sending ? (online ? 'Sending…' : 'Sending… the connection dropped; retrying until it is back.')
+    : pending.size ? `The agent is regenerating ${pending.size} option${pending.size > 1 ? 's' : ''}. They update here automatically.`
+    : S.status === 'submitted' ? 'Sent. The agent has your choice. You can close this tab.'
+    : S.status === 'expired' ? 'This selection timed out. Ask the agent in chat to reopen it.'
+    : '';
+  $('banner').replaceChildren(...(msg ? [el('p', { textContent: msg })] : []));
+  const r = S.remaining_s;
+  $('timer').textContent = S.status === 'open' ? `· ${Math.floor(r / 60)}:${String(r % 60).padStart(2, '0')} left` : '';
+}
+
+async function send(action) {
+  const ev = { client_event_id: crypto.randomUUID(), action, selected_ids: [...selected],
+               feedback: $('feedback').value };
+  sending = true; sync();
+  // Retry with the same client_event_id until the server answers; it drops duplicates.
+  for (;;) {
+    try {
+      const r = await api('/api/event', ev);
+      setOnline(true);
+      S.status = r.status;
+      if (action === 'regenerate') S.pending = ev.selected_ids;
+      $('feedback').value = '';
+      break;
+    } catch (e) {
+      if (e.status) { alert('Could not send: ' + e.message); break; }  // server said no; don't retry
+      setOnline(false); sync();
+      await new Promise(r => setTimeout(r, 2000));
+    }
+  }
+  sending = false; sync();
+}
+
+$('submit').addEventListener('click', () => {
+  if (!selected.size && !confirm('Submit with nothing selected? This tells the agent none of the options work.')) return;
+  send('submit');
+});
+$('regen').addEventListener('click', () => send('regenerate'));
+$('all').addEventListener('click', () => { selected = new Set(S.items.map(i => i.id)); saveSel(); sync(); });
+$('clear').addEventListener('click', () => { selected.clear(); saveSel(); sync(); });
+$('viewer').addEventListener('click', () => $('viewer').close());
+
+async function refresh() {
+  try {
+    const s = await api('/api/session');
+    setOnline(true);
+    if (!S || s.version !== S.version || s.session_id !== S.session_id) render(s);
+    else { Object.assign(S, { status: s.status, pending: s.pending, remaining_s: s.remaining_s }); sync(); }
+  } catch (e) {
+    setOnline(false);
+    if (e.status === 401) { $('title').textContent = 'This link has expired. Ask the agent for a new one.'; return; }
+  }
+  setTimeout(refresh, 2000);
+}
+refresh();
+</script>
+</body>
+</html>
