@@ -12,14 +12,14 @@
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/screenshot-dark.png">
   <source media="(prefers-color-scheme: light)" srcset="docs/screenshot-light.png">
-  <img alt="The selection page: three logo images, a subtitle and a long launch post as cards; the square logo and the post are ticked, with a feedback note and Regenerate selected / Submit selection buttons in the bottom bar." src="docs/screenshot-light.png">
+  <img alt="The selection page: three logo images, a subtitle and a long launch post as cards; the circle logo and the post are ticked as winners, the square logo is marked Redo, with a feedback note and Regenerate 1 / Submit selection buttons in the bottom bar." src="docs/screenshot-light.png">
 </picture>
 
 Ask an agent for four logo ideas or three draft intros and you usually get them
 pasted into the chat. Comparing images there is awkward, and saying which ones
 to redo is fiddly. claude-select gives the options a proper page on
-`localhost`. You tick one winner or several, add a note, and submit or send
-specific cards back for another try. The agent gets your choice back as
+`localhost`. You tick one winner or several, mark any card Redo to send it back for
+another try, add a note, and submit. The agent gets your choice back as
 structured JSON and carries on.
 
 ## Highlights
@@ -28,8 +28,9 @@ structured JSON and carries on.
   a full-size view, snippets up to 500 characters, and long drafts that scroll and expand.
 - **Single-winner or multi-winner** modes (radio or checkbox, 0..N), with
   Select all and Clear.
-- **Regenerate selected**: the agent receives each item's original prompt and
-  parameters, re-runs only those, and the cards update in place with a `v2` badge.
+- **Redo per card**, separate from your winners: the agent receives each marked
+  item's original prompt and parameters, re-runs only those, and the cards update
+  in place with a `v2` badge.
 - **Hard to break**: port fallback, retry after a dropped connection, empty-submit
   confirmation, session timeout, crash recovery, and the server shuts itself down when idle.
 - **Zero dependencies**: one Python file (standard library, ≥ 3.10) and one HTML
@@ -127,8 +128,8 @@ The agent generates the options, opens the page, and replies with one line:
 Options are ready: http://127.0.0.1:8765/?t=hks4JDNbYo1JQzrnoDZHXAvu
 ```
 
-Pick, optionally add a note, then click **Submit selection** or **Regenerate
-selected**. The agent is waiting in the background and continues on its own.
+Tick winners and click **Submit selection**, or mark cards **Redo** and click
+**Regenerate**. Either way you can add a note. The agent is waiting in the background and continues on its own.
 
 To try the page without an agent, drive it by hand:
 
@@ -202,7 +203,7 @@ Using [`examples/multi-mixed.json`](examples/multi-mixed.json): three SVG
 logos, a subtitle and a 141-word post.
 
 1. `P start examples/multi-mixed.json`, then `P poll`.
-2. Tick **Mark · square**, type *darker, bolder*, and click **Regenerate selected**.
+2. Click **Redo** on **Mark · square**, type *darker, bolder*, and click **Regenerate 1**.
    The card greys out with "Regenerating…" and every action locks.
 3. `poll` returns the original task for that card:
    ```json
@@ -213,7 +214,8 @@ logos, a subtitle and a 141-word post.
    ```
 4. The agent re-runs it and pushes the result under the **same id**:
    `P update examples/regenerated-logo-b.json`, then `P poll` again.
-5. Within 2 s the card shows the new image with a `v2` badge, still selected.
+5. Within 2 s the card shows the new image with a `v2` badge. Winners you ticked
+   before regenerating stay ticked.
 6. Tick the others you want and submit. `poll` returns every chosen item in full.
 
 If you submit in multi mode with nothing ticked, the page asks you to confirm.

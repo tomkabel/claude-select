@@ -8,6 +8,9 @@ All notable changes to this project are documented here. The format follows
 
 ### Changed
 
+- Each card has its own **Redo** toggle, separate from the winner tick.
+  **Regenerate** sends only the Redo cards, and winners stay ticked through
+  the round. The agent protocol is unchanged.
 - Clicking an image now selects its card, like the rest of the card; full-size view
   moved to a corner button.
 - Status messages (sending, sent, regenerating, errors) appear in the bottom bar next

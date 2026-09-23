@@ -52,6 +52,9 @@
   .card label { display: flex; align-items: center; gap: .5rem; font-weight: 600; cursor: pointer; flex: 1; min-width: 0; }
   .card label span { overflow-wrap: anywhere; }
   .card input { accent-color: var(--accent); width: 1.1rem; height: 1.1rem; margin: 0; flex: none; }
+  .again { display: flex; align-items: center; gap: .3rem; padding: .2rem .55rem; font-size: .8rem; color: var(--muted); }
+  .again[aria-pressed="true"] { color: var(--accent); border-color: var(--accent); background: var(--accent-soft); font-weight: 600; }
+  .card.redo { border-style: dashed; border-color: var(--accent); }
   .badge { font-size: .72rem; color: var(--muted); border: 1px solid var(--line); border-radius: 99px; padding: 0 .45rem; }
   .check { position: absolute; top: -.6rem; right: -.6rem; width: 1.6rem; height: 1.6rem; border-radius: 50%;
            background: var(--accent); color: var(--on-accent); display: none; place-items: center; }
@@ -121,7 +124,7 @@
     <button id="clear" hidden>Clear</button>
     <input id="feedback" type="text" placeholder="Optional note for the agent"
            aria-label="Note for the agent: what to change, or why you picked it" maxlength="2000">
-    <button id="regen">Regenerate selected</button>
+    <button id="regen">Regenerate</button>
     <button id="submit" class="primary" title="Ctrl+Enter" aria-keyshortcuts="Control+Enter Meta+Enter">Submit selection</button>
   </div>
 </footer>
@@ -131,11 +134,13 @@
 const token = new URLSearchParams(location.search).get('t') || '';
 const $ = id => document.getElementById(id);
 let S = null;            // last session snapshot from the server
-let selected = new Set();
+let selected = new Set();  // winners, sent on submit
+let redo = new Set();      // marked for another version, sent on regenerate
 let sending = false;     // an event is in flight (possibly retrying)
 let online = true;
 let error = '';          // last refusal from the server, shown until the next send
 const ICON_CHECK = '<svg width="14" height="14" viewBox="0 0 24 24" stroke-width="3.5"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+const ICON_REDO = '<svg width="14" height="14" viewBox="0 0 24 24" stroke-width="2.25"><path d="M20 12a8 8 0 1 1-2.35-5.65L20 8.5M20 3.5v5h-5"/></svg>';
 const ICON_ZOOM = '<svg width="16" height="16" viewBox="0 0 24 24" stroke-width="2"><path d="M15 4h5v5M9 20H4v-5M20 4l-6 6M4 20l6-6"/></svg>';
 
 async function api(path, body) {
@@ -150,7 +155,10 @@ async function api(path, body) {
 }
 
 const storeKey = () => 'claude-select:' + S.session_id;
-function saveSel() { localStorage.setItem(storeKey(), JSON.stringify([...selected])); }
+function saveSel() {
+  localStorage.setItem(storeKey(), JSON.stringify([...selected]));
+  localStorage.setItem(storeKey() + ':redo', JSON.stringify([...redo]));
+}
 
 function setOnline(ok) {
   online = ok;
@@ -176,9 +184,13 @@ function card(it, prevRev) {
   });
   const md = it.metadata || {};
   const title = label(it);
+  // Redo is its own toggle, so "keep this" and "make another version" never share one tick.
+  const again = el('button', { className: 'again', type: 'button', ariaLabel: `Redo ${title}`, ariaPressed: 'false',
+                               title: 'Ask the agent for a new version of this one', innerHTML: ICON_REDO + 'Redo' });
+  again.addEventListener('click', () => { redo.has(it.id) ? redo.delete(it.id) : redo.add(it.id); saveSel(); sync(); });
   const head = el('div', { className: 'head' },
     el('label', { htmlFor: input.id }, input, el('span', { textContent: title })),
-    it.revision > 1 ? el('span', { className: 'badge', textContent: 'v' + it.revision, title: 'Regenerated' }) : null);
+    it.revision > 1 ? el('span', { className: 'badge', textContent: 'v' + it.revision, title: 'Regenerated' }) : null, again);
 
   let body;
   if (it.type === 'image') {
@@ -222,9 +234,13 @@ function render(s) {
   const prev = S ? Object.fromEntries(S.items.map(i => [i.id, i.revision])) : {};
   const first = !S || S.session_id !== s.session_id;
   S = s;
-  if (first) selected = new Set(JSON.parse(localStorage.getItem(storeKey()) || '[]'));
+  if (first) {
+    selected = new Set(JSON.parse(localStorage.getItem(storeKey()) || '[]'));
+    redo = new Set(JSON.parse(localStorage.getItem(storeKey() + ':redo') || '[]'));
+  }
   const ids = new Set(s.items.map(i => i.id));
   selected = new Set([...selected].filter(id => ids.has(id)));
+  redo = new Set([...redo].filter(id => ids.has(id)));
   if (s.mode === 'single' && selected.size > 1) selected = new Set([...selected].slice(0, 1));
   document.title = s.title + ' · claude-select';
   $('title').textContent = s.title;
@@ -240,17 +256,21 @@ function sync() {
     c.classList.toggle('regen', pending.has(c.dataset.id));
     c.ariaBusy = String(pending.has(c.dataset.id));
     c.querySelector('input').checked = selected.has(c.dataset.id);
+    c.classList.toggle('redo', redo.has(c.dataset.id));
+    c.querySelector('.again').ariaPressed = String(redo.has(c.dataset.id));
   }
   const open = S.status === 'open' && !pending.size && !sending;
   const n = selected.size;
-  setText($('count'), S.mode === 'single'
+  setText($('count'), (S.mode === 'single'
     ? (n ? '1 selected' : 'Pick one option')
-    : `${n} of ${S.items.length} selected`);
+    : `${n} of ${S.items.length} selected`) + (redo.size ? ` · ${redo.size} to redo` : ''));
+  setText($('regen'), redo.size ? `Regenerate ${redo.size}` : 'Regenerate');
+  $('regen').title = redo.size ? '' : 'Mark cards with Redo first';
   $('submit').disabled = !open || (S.mode === 'single' && n !== 1);
-  $('regen').disabled = !open || !n;
+  $('regen').disabled = !open || !redo.size;
   $('all').disabled = !open || n === S.items.length;
   $('clear').disabled = !open || !n;
-  for (const i of document.querySelectorAll('.card input')) i.disabled = !open;
+  for (const i of document.querySelectorAll('.card input, .card .again')) i.disabled = !open;
   const r = S.remaining_s;
   const late = S.status === 'open' && r < 300;
   const picked = S.items.filter(i => selected.has(i.id)).map(label).join(', ');
@@ -269,7 +289,8 @@ function sync() {
 }
 
 async function send(action) {
-  const ev = { client_event_id: crypto.randomUUID(), action, selected_ids: [...selected],
+  const ev = { client_event_id: crypto.randomUUID(), action,
+               selected_ids: [...(action === 'regenerate' ? redo : selected)],
                feedback: $('feedback').value };
   sending = true; error = ''; sync();
   // Retry with the same client_event_id until the server answers; it drops duplicates.
@@ -278,7 +299,7 @@ async function send(action) {
       const r = await api('/api/event', ev);
       setOnline(true);
       S.status = r.status;
-      if (action === 'regenerate') S.pending = ev.selected_ids;
+      if (action === 'regenerate') { S.pending = ev.selected_ids; redo.clear(); saveSel(); }
       $('feedback').value = '';
       break;
     } catch (e) {
