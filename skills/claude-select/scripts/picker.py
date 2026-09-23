@@ -19,6 +19,7 @@ import mimetypes
 import os
 import secrets
 import signal
+import socketserver
 import subprocess
 import sys
 import threading
@@ -129,6 +130,12 @@ def load_json(path):
 
 
 # ---------------------------------------------------------------- server
+
+class Server(ThreadingHTTPServer):
+    def server_bind(self):  # skip HTTPServer's getfqdn(): reverse DNS can stall for seconds (macOS)
+        socketserver.TCPServer.server_bind(self)
+        self.server_name, self.server_port = self.server_address[:2]
+
 
 def serve(args):
     token = os.environ["CLAUDE_SELECT_TOKEN"]
@@ -323,7 +330,7 @@ def serve(args):
     httpd, port = None, args.port
     for p in [*range(args.port, args.port + PORT_TRIES), 0]:
         try:
-            httpd = ThreadingHTTPServer(("127.0.0.1", p), H)
+            httpd = Server(("127.0.0.1", p), H)
             break
         except OSError:
             continue
@@ -409,7 +416,7 @@ def cmd_start(a):
     with open(LOG, "w") as log:
         proc = subprocess.Popen([sys.executable, __file__, "serve", "--port", str(a.port)], env=env,
                                 stdin=subprocess.DEVNULL, stdout=log, stderr=log, start_new_session=True)
-    for _ in range(50):
+    for _ in range(150):  # up to 15 s for a cold interpreter on a slow machine
         time.sleep(0.1)
         st = state()
         if st and st.get("session_id") == s["session_id"] and alive(st):

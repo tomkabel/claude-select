@@ -69,7 +69,7 @@ claude plugin marketplace add tomkabel/claude-select
 claude plugin install claude-select@claude-select
 ```
 
-Restart Claude Code. Check that `/claude-select` appears when you type `/`.
+Restart Claude Code. The skill shows up as `/claude-select:claude-select` (plugin skills are namespaced); as a bare skill it is `/claude-select`.
 
 <details>
 <summary>Alternative: bare skill, no plugin</summary>
