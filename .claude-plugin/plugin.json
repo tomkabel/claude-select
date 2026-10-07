@@ -6,7 +6,7 @@
     "name": "Tom Kristian Abel",
     "email": "tomkristianabel@gmail.com"
   },
-  "license": "MIT",
+  "license": "MPL-2.0",
   "keywords": ["selection", "picker", "ui", "images", "regenerate", "human-in-the-loop"],
   "skills": "./skills/"
 }

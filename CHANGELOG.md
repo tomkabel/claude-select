@@ -8,6 +8,7 @@ All notable changes to this project are documented here. The format follows
 
 ### Changed
 
+- Relicensed from MIT to MPL-2.0 (file-level copyleft). Copies obtained under the earlier MIT license keep their MIT terms.
 - Each card has its own **Redo** toggle, separate from the winner tick.
   **Regenerate** sends only the Redo cards, and winners stay ticked through
   the round. The agent protocol is unchanged.
