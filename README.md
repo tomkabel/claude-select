@@ -67,10 +67,10 @@ Install as a plugin from this repository:
 
 ```bash
 claude plugin marketplace add tomkabel/claude-select
-claude plugin install claude-select@claude-select
+claude plugin install abel-select@claude-select
 ```
 
-Restart Claude Code. The skill shows up as `/claude-select:claude-select` (plugin skills are namespaced); as a bare skill it is `/claude-select`.
+Restart Claude Code. The skill shows up as `/abel-select:claude-select` (plugin skills are namespaced); as a bare skill it is `/claude-select`.
 
 <details>
 <summary>Alternative: bare skill, no plugin</summary>
