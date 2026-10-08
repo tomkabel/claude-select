@@ -7,7 +7,7 @@
 [![Dependencies](https://img.shields.io/badge/dependencies-0-brightgreen)](#requirements)
 [![Claude Code](https://img.shields.io/badge/Claude%20Code-plugin-D97757)](https://docs.claude.com/en/docs/claude-code/plugins)
 [![Hermes Agent](https://img.shields.io/badge/Hermes%20Agent-skill-4B3B8F)](https://hermes-agent.nousresearch.com/docs/user-guide/features/skills)
-[![License: MIT](https://img.shields.io/badge/license-MIT-lightgrey)](LICENSE)
+[![License: MPL-2.0](https://img.shields.io/badge/license-MPL--2.0-brightgreen)](LICENSE)
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/screenshot-dark.png">
@@ -67,10 +67,10 @@ Install as a plugin from this repository:
 
 ```bash
 claude plugin marketplace add tomkabel/claude-select
-claude plugin install claude-select@claude-select
+claude plugin install abel-select@claude-select
 ```
 
-Restart Claude Code. The skill shows up as `/claude-select:claude-select` (plugin skills are namespaced); as a bare skill it is `/claude-select`.
+Restart Claude Code. The skill shows up as `/abel-select:claude-select` (plugin skills are namespaced); as a bare skill it is `/claude-select`.
 
 <details>
 <summary>Alternative: bare skill, no plugin</summary>
@@ -308,4 +308,6 @@ privately as described in [SECURITY.md](SECURITY.md).
 
 ## License
 
-[MIT](LICENSE) © Tom Kristian Abel
+[MPL-2.0](LICENSE) © 2026 Tom Kristian Abel
+
+MPL-2.0 is file-level copyleft: you can bundle claude-select into any project, open or proprietary, but changes to claude-select's own files must stay under MPL-2.0. Copies obtained while the project was MIT-licensed keep their MIT terms.

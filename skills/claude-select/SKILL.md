@@ -2,7 +2,7 @@
 name: claude-select
 description: Show the user several generated options (images, short text, long text, or a mix) on a localhost web page so they can pick one or several winners, leave a note, or ask to regenerate specific ones. Use when you produced alternatives the user should choose between visually instead of in chat, e.g. "give me 4 logo options", "draft 3 intros and let me pick", "which headline", "shortlist these", "regenerate the ones I don't like".
 version: 0.1.1
-license: MIT
+license: MPL-2.0
 platforms: [linux, macos, windows]
 allowed-tools: Bash(python3 *picker.py*)
 compatibility: Python >= 3.10, stdlib only. Binds 127.0.0.1 (port 8765, falls back to the next 9, then any free port). Works in Claude Code and Hermes Agent.
